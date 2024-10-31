@@ -19,9 +19,11 @@ import { ACTIONS } from "./constants";
 export default function App() {
   const stageRef = useRef();
   const [action, setAction] = useState(ACTIONS.SELECT);
+  const [fillColor, setFillColor] = useState('#E94560')
   const onPointerDown = () => {};
   const onPointerMove = () => {};
   const onPointerUp = () => {};
+  const handleExport=()=>{};
 
   return (
     <>
@@ -84,13 +86,13 @@ export default function App() {
               <input
                 className="w-6 h-6"
                 type="color"
-                // value={fillColor}
-                //onChange={(e) => setFillColor(e.target.value)}
+                value={fillColor}
+                onChange={(e) => setFillColor(e.target.value)}
               />
             </button>
 
             <button
-            //onClick={handleExport}
+            onClick={handleExport}
             >
               <IoMdDownload size={"1.5rem"} />
             </button>
