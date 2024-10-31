@@ -261,7 +261,7 @@ export default function App() {
               y={0}
               height={window.innerHeight}
               width={window.innerWidth}
-              fill="#ffffff"
+             // fill="#ffffff"
               id="bg"
               onClick={() => {
                 transformerRef.current.nodes([]);

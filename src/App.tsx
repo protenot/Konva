@@ -4,6 +4,7 @@ import { FaLongArrowAltRight } from "react-icons/fa";
 import { LuPencil } from "react-icons/lu";
 import { GiArrowCursor } from "react-icons/gi";
 import { FaRegCircle } from "react-icons/fa6";
+import Konva from "konva";
 import {
   Arrow,
   Circle,
@@ -16,14 +17,88 @@ import {
 import { useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { ACTIONS } from "./constants";
+
 export default function App() {
-  const stageRef = useRef();
+  const stageRef = useRef<Konva.Stage>();
   const [action, setAction] = useState(ACTIONS.SELECT);
-  const [fillColor, setFillColor] = useState('#E94560')
-  const onPointerDown = () => {};
-  const onPointerMove = () => {};
-  const onPointerUp = () => {};
-  const handleExport=()=>{};
+  const [fillColor, setFillColor] = useState("#E94560");
+  const [rectangles, setRectangles] = useState([]);
+  const strokeColor = "#000";
+  const isPainting = useRef<boolean>(false);
+  const currentShapeId = useRef<string | undefined>(undefined);
+
+  const onPointerDown = () => {
+    if (action === ACTIONS.SELECT) return;
+    if (stageRef.current) {
+      //  console.log(stageRef.current)
+      const stage = stageRef.current;
+      const { x, y } = stage.getPointerPosition();
+      console.log(" x, y", x, y);
+      const id = uuidv4();
+
+      currentShapeId.current = id;
+
+      isPainting.current = true;
+      switch (action) {
+        case ACTIONS.RECTANGLE:
+          setRectangles((rectangles) => [
+            ...rectangles,
+            {
+              id,
+              x,
+              y,
+              height: 20,
+              width: 20,
+              fillColor,
+            },
+          ]);
+          break;
+      }
+    }
+  };
+  const onPointerMove = () => {
+    if (action === ACTIONS.SELECT || !isPainting.current) return;
+    if (stageRef.current) {
+      //  console.log(stageRef.current)
+      const stage = stageRef.current;
+      const { x, y } = stage.getPointerPosition();
+      console.log(" x, y", x, y);
+      if (currentShapeId.current) {
+        switch (action) {
+          case ACTIONS.RECTANGLE:
+            setRectangles((rectangles) =>
+              rectangles.map((rectangle) => {
+                if (rectangle.id === currentShapeId) {
+                  return {
+                    ...rectangle,
+                    width: x - rectangle.x,
+                    height: y - rectangle.y,
+                  };
+                }
+                return rectangle;
+              })
+            );
+            break;
+        }
+      }
+    }
+  };
+
+  const onPointerUp = () => {
+    if (isPainting.current) {
+      isPainting.current = false;
+    }
+  };
+  const handleExport = () => {
+    if (stageRef.current) {
+      const link = document.createElement("a");
+      link.download = "image.png";
+      link.href = stageRef.current.toDataURL();
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
 
   return (
     <>
@@ -91,9 +166,7 @@ export default function App() {
               />
             </button>
 
-            <button
-            onClick={handleExport}
-            >
+            <button onClick={handleExport}>
               <IoMdDownload size={"1.5rem"} />
             </button>
           </div>
@@ -107,7 +180,28 @@ export default function App() {
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
         >
-          <Layer></Layer>
+          <Layer>
+            <Rect
+              x={0}
+              y={0}
+              height={window.innerHeight}
+              width={window.innerWidth}
+              fill="#ffffff"
+              id="bg"
+            />
+            {rectangles.map((rectangle) => (
+              <Rect
+                key={rectangle.id}
+                x={rectangle.x}
+                y={rectangle.y}
+                stroke={strokeColor}
+                strokeWidth={2}
+                fill={rectangle.fillColor}
+                height={rectangle.height}
+                width={rectangle.width}
+              />
+            ))}
+          </Layer>
         </Stage>
       </div>
     </>
