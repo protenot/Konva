@@ -96,8 +96,6 @@ export default function App() {
     if (stageRef.current) {
       const stage = stageRef.current;
       const { x, y } = stage.getPointerPosition();
-      console.log(" x, y", x, y);
-
       switch (action) {
         case ACTIONS.RECTANGLE:
           setRectangles((rectangles) =>
@@ -157,9 +155,7 @@ export default function App() {
   };
 
   const onPointerUp = () => {
-    //  if (isPainting.current) {
     isPainting.current = false;
-    //}
   };
   const handleExport = () => {
     if (stageRef.current) {
@@ -176,6 +172,48 @@ export default function App() {
     const target = e.currentTarget;
     transformerRef.current.nodes([target]);
   }
+
+  const handleDragMoveRectangle = (e, id) => {
+    const { x, y } = e.target.position();
+    setRectangles((rectangles) =>
+      rectangles.map((rectangle) =>
+        rectangle.id === id ? { ...rectangle, x, y } : rectangle
+      )
+    );
+  };
+
+  const handleDragMoveCircle = (e, id) => {
+    const { x, y } = e.target.position();
+    setCircles((circles) =>
+      circles.map((circle) => (circle.id === id ? { ...circle, x, y } : circle))
+    );
+  };
+
+  const handleDragMoveArrow = (e, id) => {
+    const { x, y } = e.target.position();
+    setArrows((arrows) =>
+      arrows.map((arrow) =>
+        arrow.id === id
+          ? {
+              ...arrow,
+              points: [x, y, arrow.points[2], arrow.points[3]],
+            }
+          : arrow
+      )
+    );
+  };
+
+  const handleDragMoveScribble = (e, id) => {
+    const { x, y } = e.target.position();
+    setScribbles((scribbles) =>
+      scribbles.map((scribble) =>
+        scribble.id === id
+          ? { ...scribble, points: [x, y, ...scribble.points.slice(2)] }
+          : scribble
+      )
+    );
+  };
+
   return (
     <>
       <div className="relative w-full h-screen overflow-hidden">
@@ -280,6 +318,8 @@ export default function App() {
                 width={rectangle.width}
                 draggable={isDraggable}
                 onClick={onClick}
+                onDragMove={(e) => handleDragMoveRectangle(e, rectangle.id)}
+                onDragEnd={(e) => handleDragMoveRectangle(e, rectangle.id)}
               />
             ))}
             {circles.map((circle) => (
@@ -293,6 +333,8 @@ export default function App() {
                 fill={circle.fillColor}
                 draggable={isDraggable}
                 onClick={onClick}
+                onDragMove={(e) => handleDragMoveCircle(e, circle.id)}
+                onDragEnd={(e) => handleDragMoveCircle(e, circle.id)}
               />
             ))}
 
@@ -305,6 +347,8 @@ export default function App() {
                 fill={arrow.fillColor}
                 draggable={isDraggable}
                 onClick={onClick}
+                onDragMove={(e) => handleDragMoveArrow(e, arrow.id)}
+                onDragEnd={(e) => handleDragMoveArrow(e, arrow.id)}
               />
             ))}
             {scribbles.map((scribble) => (
@@ -318,6 +362,8 @@ export default function App() {
                 fill={scribble.fillColor}
                 draggable={isDraggable}
                 onClick={onClick}
+                onDragMove={(e) => handleDragMoveScribble(e, scribble.id)}
+                onDragEnd={(e) => handleDragMoveScribble(e, scribble.id)}
               />
             ))}
             <Transformer ref={transformerRef} />
