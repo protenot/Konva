@@ -30,6 +30,7 @@ export default function App() {
   const strokeColor = "#000";
   const isPainting = useRef<boolean>(false);
   const currentShapeId = useRef<string | undefined>(undefined);
+  const transformerRef = useRef<Konva.Transformer | null>(null);
   const isDraggable = action === ACTIONS.SELECT;
 
   const onPointerDown = () => {
@@ -96,7 +97,7 @@ export default function App() {
       const stage = stageRef.current;
       const { x, y } = stage.getPointerPosition();
       console.log(" x, y", x, y);
-     
+
       switch (action) {
         case ACTIONS.RECTANGLE:
           setRectangles((rectangles) =>
@@ -138,21 +139,19 @@ export default function App() {
             })
           );
           break;
-          case ACTIONS.SCRIBBLE:
-        setScribbles((scribbles) =>
-          scribbles.map((scribble) => {
-            if (scribble.id === currentShapeId.current) {
-              return {
-                ...scribble,
-                points: [...scribble.points, x, y],
-              };
-            }
-            return scribble;
-          })
-        );
-        break;
-
-      
+        case ACTIONS.SCRIBBLE:
+          setScribbles((scribbles) =>
+            scribbles.map((scribble) => {
+              if (scribble.id === currentShapeId.current) {
+                return {
+                  ...scribble,
+                  points: [...scribble.points, x, y],
+                };
+              }
+              return scribble;
+            })
+          );
+          break;
       }
     }
   };
@@ -172,7 +171,11 @@ export default function App() {
       document.body.removeChild(link);
     }
   };
-
+  function onClick(e: { currentTarget: any }) {
+    if (action !== ACTIONS.SELECT) return;
+    const target = e.currentTarget;
+    transformerRef.current.nodes([target]);
+  }
   return (
     <>
       <div className="relative w-full h-screen overflow-hidden">
@@ -261,6 +264,9 @@ export default function App() {
               width={window.innerWidth}
               fill="#ffffff"
               id="bg"
+              onClick={() => {
+                transformerRef.current.nodes([]);
+              }}
             />
             {rectangles.map((rectangle) => (
               <Rect
@@ -272,6 +278,8 @@ export default function App() {
                 fill={rectangle.fillColor}
                 height={rectangle.height}
                 width={rectangle.width}
+                draggable={isDraggable}
+                onClick={onClick}
               />
             ))}
             {circles.map((circle) => (
@@ -283,8 +291,8 @@ export default function App() {
                 stroke={strokeColor}
                 strokeWidth={2}
                 fill={circle.fillColor}
-                //  draggable={isDraggable}
-                //  onClick={onClick}
+                draggable={isDraggable}
+                onClick={onClick}
               />
             ))}
 
@@ -295,8 +303,8 @@ export default function App() {
                 stroke={strokeColor}
                 strokeWidth={2}
                 fill={arrow.fillColor}
-                //  draggable={isDraggable}
-                // onClick={onClick}
+                draggable={isDraggable}
+                onClick={onClick}
               />
             ))}
             {scribbles.map((scribble) => (
@@ -308,10 +316,11 @@ export default function App() {
                 stroke={strokeColor}
                 strokeWidth={2}
                 fill={scribble.fillColor}
-                //draggable={isDraggable}
-                //onClick={onClick}
+                draggable={isDraggable}
+                onClick={onClick}
               />
             ))}
+            <Transformer ref={transformerRef} />
           </Layer>
         </Stage>
       </div>
