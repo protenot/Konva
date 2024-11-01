@@ -29,15 +29,11 @@ export default function App() {
 
   const onPointerDown = () => {
     if (action === ACTIONS.SELECT) return;
-    if (stageRef.current) {
-      //  console.log(stageRef.current)
+    if (stageRef.current) {   
       const stage = stageRef.current;
       const { x, y } = stage.getPointerPosition();
-      console.log(" x, y", x, y);
       const id = uuidv4();
-
       currentShapeId.current = id;
-
       isPainting.current = true;
       switch (action) {
         case ACTIONS.RECTANGLE:
@@ -47,8 +43,8 @@ export default function App() {
               id,
               x,
               y,
-              height: 20,
-              width: 20,
+              height: 50,
+              width: 50,
               fillColor,
             },
           ]);
@@ -59,16 +55,15 @@ export default function App() {
   const onPointerMove = () => {
     if (action === ACTIONS.SELECT || !isPainting.current) return;
     if (stageRef.current) {
-      //  console.log(stageRef.current)
       const stage = stageRef.current;
       const { x, y } = stage.getPointerPosition();
       console.log(" x, y", x, y);
-      if (currentShapeId.current) {
+     // if (currentShapeId.current) {
         switch (action) {
           case ACTIONS.RECTANGLE:
             setRectangles((rectangles) =>
               rectangles.map((rectangle) => {
-                if (rectangle.id === currentShapeId) {
+                if (rectangle.id === currentShapeId.current) {
                   return {
                     ...rectangle,
                     width: x - rectangle.x,
@@ -79,15 +74,15 @@ export default function App() {
               })
             );
             break;
-        }
+       // }
       }
     }
   };
 
   const onPointerUp = () => {
-    if (isPainting.current) {
+  //  if (isPainting.current) {
       isPainting.current = false;
-    }
+    //}
   };
   const handleExport = () => {
     if (stageRef.current) {
