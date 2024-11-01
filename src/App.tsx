@@ -23,13 +23,18 @@ export default function App() {
   const [action, setAction] = useState(ACTIONS.SELECT);
   const [fillColor, setFillColor] = useState("#E94560");
   const [rectangles, setRectangles] = useState([]);
+  const [circles, setCircles] = useState([]);
+  const [arrows, setArrows] = useState([]);
+  const [scribbles, setScribbles] = useState([]);
+
   const strokeColor = "#000";
   const isPainting = useRef<boolean>(false);
   const currentShapeId = useRef<string | undefined>(undefined);
+  const isDraggable = action === ACTIONS.SELECT;
 
   const onPointerDown = () => {
     if (action === ACTIONS.SELECT) return;
-    if (stageRef.current) {   
+    if (stageRef.current) {
       const stage = stageRef.current;
       const { x, y } = stage.getPointerPosition();
       const id = uuidv4();
@@ -49,6 +54,39 @@ export default function App() {
             },
           ]);
           break;
+        case ACTIONS.CIRCLE:
+          setCircles((circle) => [
+            ...circle,
+            {
+              id,
+              x,
+              y,
+              radius: 20,
+              fillColor,
+            },
+          ]);
+          break;
+
+        case ACTIONS.ARROW:
+          setArrows((arrows) => [
+            ...arrows,
+            {
+              id,
+              points: [x, y, x + 20, y + 20],
+              fillColor,
+            },
+          ]);
+          break;
+        case ACTIONS.SCRIBBLE:
+          setScribbles((scribbles) => [
+            ...scribbles,
+            {
+              id,
+              points: [x, y],
+              fillColor,
+            },
+          ]);
+          break;
       }
     }
   };
@@ -58,30 +96,70 @@ export default function App() {
       const stage = stageRef.current;
       const { x, y } = stage.getPointerPosition();
       console.log(" x, y", x, y);
-     // if (currentShapeId.current) {
-        switch (action) {
-          case ACTIONS.RECTANGLE:
-            setRectangles((rectangles) =>
-              rectangles.map((rectangle) => {
-                if (rectangle.id === currentShapeId.current) {
-                  return {
-                    ...rectangle,
-                    width: x - rectangle.x,
-                    height: y - rectangle.y,
-                  };
-                }
-                return rectangle;
-              })
-            );
-            break;
-       // }
+     
+      switch (action) {
+        case ACTIONS.RECTANGLE:
+          setRectangles((rectangles) =>
+            rectangles.map((rectangle) => {
+              if (rectangle.id === currentShapeId.current) {
+                return {
+                  ...rectangle,
+                  width: x - rectangle.x,
+                  height: y - rectangle.y,
+                };
+              }
+              return rectangle;
+            })
+          );
+          break;
+        case ACTIONS.CIRCLE:
+          setCircles((circles) =>
+            circles.map((circle) => {
+              if (circle.id === currentShapeId.current) {
+                return {
+                  ...circle,
+                  radius: ((y - circle.y) ** 2 + (x - circle.x) ** 2) ** 0.5,
+                };
+              }
+              return circle;
+            })
+          );
+          break;
+        case ACTIONS.ARROW:
+          setArrows((arrows) =>
+            arrows.map((arrow) => {
+              if (arrow.id === currentShapeId.current) {
+                return {
+                  ...arrow,
+                  points: [arrow.points[0], arrow.points[1], x, y],
+                };
+              }
+              return arrow;
+            })
+          );
+          break;
+          case ACTIONS.SCRIBBLE:
+        setScribbles((scribbles) =>
+          scribbles.map((scribble) => {
+            if (scribble.id === currentShapeId.current) {
+              return {
+                ...scribble,
+                points: [...scribble.points, x, y],
+              };
+            }
+            return scribble;
+          })
+        );
+        break;
+
+      
       }
     }
   };
 
   const onPointerUp = () => {
-  //  if (isPainting.current) {
-      isPainting.current = false;
+    //  if (isPainting.current) {
+    isPainting.current = false;
     //}
   };
   const handleExport = () => {
@@ -194,6 +272,44 @@ export default function App() {
                 fill={rectangle.fillColor}
                 height={rectangle.height}
                 width={rectangle.width}
+              />
+            ))}
+            {circles.map((circle) => (
+              <Circle
+                key={circle.id}
+                radius={circle.radius}
+                x={circle.x}
+                y={circle.y}
+                stroke={strokeColor}
+                strokeWidth={2}
+                fill={circle.fillColor}
+                //  draggable={isDraggable}
+                //  onClick={onClick}
+              />
+            ))}
+
+            {arrows.map((arrow) => (
+              <Arrow
+                key={arrow.id}
+                points={arrow.points}
+                stroke={strokeColor}
+                strokeWidth={2}
+                fill={arrow.fillColor}
+                //  draggable={isDraggable}
+                // onClick={onClick}
+              />
+            ))}
+            {scribbles.map((scribble) => (
+              <Line
+                key={scribble.id}
+                lineCap="round"
+                lineJoin="round"
+                points={scribble.points}
+                stroke={strokeColor}
+                strokeWidth={2}
+                fill={scribble.fillColor}
+                //draggable={isDraggable}
+                //onClick={onClick}
               />
             ))}
           </Layer>
