@@ -7,11 +7,9 @@ import {
   Arrow,
   Line,
 } from "react-konva";
-//import RectangleShape /* , CircleShape, ArrowShape, ScribbleShape */ from "../shapes/rectangle-shape";
 import { useDrawing } from "../../hooks/drawing";
-import { RefObject, useEffect } from "react";
+import { RefObject } from "react";
 import Konva from "konva";
-//import { useDragging } from "../../hooks/drugging";
 
 interface CanvasProps {
     stageRef: RefObject<Konva.Stage | null>;
