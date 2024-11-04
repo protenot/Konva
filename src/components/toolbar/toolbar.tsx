@@ -1,8 +1,8 @@
 import { GiArrowCursor } from "react-icons/gi";
 import { TbRectangle } from "react-icons/tb";
 import { FaRegCircle, FaLongArrowAltRight } from "react-icons/fa";
-import { LuPencil } from "react-icons/lu";
-import { IoMdDownload } from "react-icons/io";
+import { LuPencil} from "react-icons/lu";
+import { IoMdDownload, IoMdText } from "react-icons/io";
 import { ACTIONS } from "../../constants/constants";
 
 export default function Toolbar({action, setAction, fillColor, setFillColor, handleExport }) {
@@ -26,6 +26,9 @@ export default function Toolbar({action, setAction, fillColor, setFillColor, han
         </button>
         <button className={getButtonClass(ACTIONS.SCRIBBLE)} onClick={() => setAction(ACTIONS.SCRIBBLE)}>
           <LuPencil size="1.5rem" />
+        </button>
+        <button className={getButtonClass(ACTIONS.TEXT)} onClick={() => setAction(ACTIONS.TEXT)}>
+          <IoMdText size="1.5rem" />
         </button>
         <input
           type="color"

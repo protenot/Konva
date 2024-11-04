@@ -6,6 +6,7 @@ import {
   Circle,
   Arrow,
   Line,
+  Text
 } from "react-konva";
 import { useDrawing } from "../../hooks/drawing";
 import { RefObject } from "react";
@@ -20,7 +21,7 @@ interface CanvasProps {
 export default function Canvas({  stageRef, action, fillColor }: CanvasProps ) {
   const strokeColor = "#000";
   const {
-    
+    texts,
     rectangles,
     circles,
     arrows,
@@ -116,6 +117,20 @@ export default function Canvas({  stageRef, action, fillColor }: CanvasProps ) {
             onDragMove={(e) => handleDragMove(e, scribble.id, "SCRIBBLE")}
             onDragEnd={(e) => handleDragEnd(e, scribble.id, "SCRIBBLE")}
             hitStrokeWidth={20}
+          />
+        ))}
+             {texts.map((text) => (
+          <Text
+            key={text.id}
+            text={text.text}
+            x={text.x}
+            y={text.y}
+            fill={text.fillColor}
+            fontSize={20}
+            draggable={isDraggable}
+            onDragMove={(e) => handleDragMove(e, text.id, "TEXT")}
+            onDragEnd={(e) => handleDragEnd(e, text.id, "TEXT")}
+            onClick={onClick}
           />
         ))}
         <Transformer ref={transformerRef} />

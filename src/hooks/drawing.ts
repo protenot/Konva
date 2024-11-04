@@ -22,6 +22,7 @@ export function useDrawing(stageRef: React.RefObject<Konva.Stage | null>, action
   const [circles, setCircles] = useState<ShapeProps[]>([]);
   const [arrows, setArrows] = useState<ShapeProps[]>([]);
   const [scribbles, setScribbles] = useState<ShapeProps[]>([]);
+  const [texts, setTexts] = useState<ShapeProps[]>([]);
 
   const isDraggable = action === ACTIONS.SELECT;
 
@@ -30,6 +31,7 @@ export function useDrawing(stageRef: React.RefObject<Konva.Stage | null>, action
     setCircles,
     setArrows,
     setScribbles,
+    setTexts
   });
 
   const onPointerDown = () => {
@@ -64,6 +66,12 @@ export function useDrawing(stageRef: React.RefObject<Konva.Stage | null>, action
           setScribbles((scribbles) => [
             ...scribbles,
             { id, points: [x, y], fillColor },
+          ]);
+          break;
+        case ACTIONS.TEXT:
+          setTexts((texts) => [
+            ...texts,
+            { id, x, y, text: "New Text", fillColor },
           ]);
           break;
       }
@@ -113,6 +121,15 @@ export function useDrawing(stageRef: React.RefObject<Konva.Stage | null>, action
             )
           );
           break;
+        case ACTIONS.TEXT:
+          setTexts((texts) =>
+            texts.map((text) =>
+              text.id === currentShapeId.current
+                ? { ...text, x, y } 
+                : text
+            )
+          );
+          break;
       }
     }
   };
@@ -142,5 +159,6 @@ export function useDrawing(stageRef: React.RefObject<Konva.Stage | null>, action
     handleDragEnd,
     isDraggable,
     onClick,
+    texts
   };
 }
