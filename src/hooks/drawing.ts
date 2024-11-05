@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
-import { ACTIONS } from '../constants/constants'
+import { ACTIONS } from "../constants/constants";
 import { useDragging } from "./dragging";
 
 interface ShapeProps {
@@ -11,9 +11,14 @@ interface ShapeProps {
   fillColor: string;
   [key: string]: any;
   points?: number[];
+  text?: string;
 }
 
-export function useDrawing(stageRef: React.RefObject<Konva.Stage | null>, action: string, fillColor: string) {
+export function useDrawing(
+  stageRef: React.RefObject<Konva.Stage | null>,
+  action: string,
+  fillColor: string
+) {
   const transformerRef = useRef<Konva.Transformer>(null);
   const isPainting = useRef<boolean>(false);
   const currentShapeId = useRef<string | undefined>(undefined);
@@ -23,6 +28,8 @@ export function useDrawing(stageRef: React.RefObject<Konva.Stage | null>, action
   const [arrows, setArrows] = useState<ShapeProps[]>([]);
   const [scribbles, setScribbles] = useState<ShapeProps[]>([]);
   const [texts, setTexts] = useState<ShapeProps[]>([]);
+  const [editingText, setEditingText] = useState<ShapeProps | null>(null);
+  const [inputValue, setInputValue] = useState("");
 
   const isDraggable = action === ACTIONS.SELECT;
 
@@ -31,10 +38,33 @@ export function useDrawing(stageRef: React.RefObject<Konva.Stage | null>, action
     setCircles,
     setArrows,
     setScribbles,
-    setTexts
+    setTexts,
   });
+  const onDoubleClick = (e: any) => {
+    console.log("Double click detected");
+    console.log("ACTIONS", ACTIONS.SELECT);
+    if (action !== ACTIONS.SELECT) return;
+    
+    const clickedShape = e.target;
+    const { x, y, width, height } = clickedShape.getClientRect();
+    const stageBox = stageRef.current!.container().getBoundingClientRect();
+    console.log("Clicked shape id:", clickedShape.id());
+    setEditingText({
+      id: clickedShape.id(),
+      x: stageBox.left + x,
+      y: stageBox.top + y,
+      width,
+      height,
+      fillColor,
+      text: clickedShape.text(),
+    });
+    console.log('clickedShape.id()', clickedShape.id())
+    setInputValue(clickedShape.text());
+  };
 
   const onPointerDown = () => {
+   // if (action !== ACTIONS.TEXT || !stageRef.current) return;
+    console.log("Pointer down triggered");
     if (action === ACTIONS.SELECT) return;
     if (stageRef.current) {
       const stage = stageRef.current;
@@ -71,7 +101,7 @@ export function useDrawing(stageRef: React.RefObject<Konva.Stage | null>, action
         case ACTIONS.TEXT:
           setTexts((texts) => [
             ...texts,
-            { id, x, y, text: "New Text", fillColor },
+            {  id, x, y, fillColor, text: "New Text" },
           ]);
           break;
       }
@@ -98,7 +128,12 @@ export function useDrawing(stageRef: React.RefObject<Konva.Stage | null>, action
           setCircles((circles) =>
             circles.map((circle) =>
               circle.id === currentShapeId.current
-                ? { ...circle, radius: Math.sqrt((y - circle.y) ** 2 + (x - circle.x) ** 2) }
+                ? {
+                    ...circle,
+                    radius: Math.sqrt(
+                      (y - circle.y) ** 2 + (x - circle.x) ** 2
+                    ),
+                  }
                 : circle
             )
           );
@@ -124,9 +159,7 @@ export function useDrawing(stageRef: React.RefObject<Konva.Stage | null>, action
         case ACTIONS.TEXT:
           setTexts((texts) =>
             texts.map((text) =>
-              text.id === currentShapeId.current
-                ? { ...text, x, y } 
-                : text
+              text.id === currentShapeId.current ? { ...text, x, y } : text
             )
           );
           break;
@@ -159,6 +192,12 @@ export function useDrawing(stageRef: React.RefObject<Konva.Stage | null>, action
     handleDragEnd,
     isDraggable,
     onClick,
-    texts
+    texts,
+    setTexts,
+    onDoubleClick,
+    editingText,
+    setEditingText,
+    inputValue,
+    setInputValue,
   };
 }

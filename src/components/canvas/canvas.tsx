@@ -1,3 +1,4 @@
+import ReactDOM from 'react-dom';
 import {
   Stage,
   Layer,
@@ -6,19 +7,19 @@ import {
   Circle,
   Arrow,
   Line,
-  Text
+  Text,
 } from "react-konva";
 import { useDrawing } from "../../hooks/drawing";
-import { RefObject } from "react";
+import { RefObject, useState } from "react";
 import Konva from "konva";
 
 interface CanvasProps {
-    stageRef: RefObject<Konva.Stage | null>;
-    action: string;
-    fillColor: string;
-  }
+  stageRef: RefObject<Konva.Stage | null>;
+  action: string;
+  fillColor: string;
+}
 
-export default function Canvas({  stageRef, action, fillColor }: CanvasProps ) {
+export default function Canvas({ stageRef, action, fillColor }: CanvasProps) {
   const strokeColor = "#000";
   const {
     texts,
@@ -34,10 +35,48 @@ export default function Canvas({  stageRef, action, fillColor }: CanvasProps ) {
     onClick,
     handleDragMove,
     handleDragEnd,
+    onDoubleClick,
+    editingText,
+    setEditingText,
+    setTexts,
+    inputValue,
+    setInputValue,
   } = useDrawing(stageRef, action, fillColor);
 
+  const [inputStyle, setInputStyle] = useState({});
+console.log('texts1',texts)
+const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const newValue = e.target.value;
+  setInputValue(newValue);
+  console.log('Editing Text ID:', editingText?.id);
+  console.log('Current Texts:', texts.map(t => ({ id: t.id, text: t.text })));
+  setTexts((texts) =>
+    texts.map((text) =>
+      text.id === editingText?.id ? { ...text, text: newValue } : text
+    )
+  );
+  console.log('texts2',texts[0])
+ 
+  setEditingText((prev) => prev ? { ...prev, text: newValue } : null);
+};
+
+
+  const handleInputBlur = () => {
+    console.log("Blur event triggered");
+    console.log("Editing text:", editingText);
+    console.log("Input value:", inputValue);
+    
+
+    setTexts((texts) =>
+      texts.map((text) =>
+        text.id === editingText?.id ? { ...text, text: inputValue } : text
+      )
+    );
+    setEditingText(null);
+  };
 
   return (
+    <>
     <Stage
       ref={stageRef}
       width={window.innerWidth}
@@ -119,10 +158,11 @@ export default function Canvas({  stageRef, action, fillColor }: CanvasProps ) {
             hitStrokeWidth={20}
           />
         ))}
-             {texts.map((text) => (
+        {texts.map((text) => (
           <Text
             key={text.id}
-            text={text.text}
+            id={text.id}
+            text={text.id === editingText?.id ? inputValue : text.text} 
             x={text.x}
             y={text.y}
             fill={text.fillColor}
@@ -131,10 +171,34 @@ export default function Canvas({  stageRef, action, fillColor }: CanvasProps ) {
             onDragMove={(e) => handleDragMove(e, text.id, "TEXT")}
             onDragEnd={(e) => handleDragEnd(e, text.id, "TEXT")}
             onClick={onClick}
+            onDblClick={(e) => onDoubleClick(e)}
           />
         ))}
+        
         <Transformer ref={transformerRef} />
       </Layer>
     </Stage>
+    {editingText &&
+        ReactDOM.createPortal(
+          <input
+            style={{
+              position: "absolute",
+              top: `${editingText.y}px`,
+              left: `${editingText.x}px`,
+              width: `${editingText.width}px`,
+              fontSize: "20px",
+              border: "1px solid black",
+              outline: "none",
+              background: "transparent",
+              color: fillColor,
+            }}
+            value={inputValue}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+            autoFocus
+          />,
+          document.body
+        )}
+    </>
   );
 }
