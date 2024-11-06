@@ -1,10 +1,10 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 import { ACTIONS } from "../constants/constants";
 import { useDragging } from "./dragging";
 
-interface ShapeProps {
+export interface ShapeProps {
   id: string;
   x?: number;
   y?: number;
@@ -28,9 +28,6 @@ export function useDrawing(
   const [arrows, setArrows] = useState<ShapeProps[]>([]);
   const [scribbles, setScribbles] = useState<ShapeProps[]>([]);
   const [texts, setTexts] = useState<ShapeProps[]>([]);
-  const [editingText, setEditingText] = useState<ShapeProps | null>(null);
-  const [inputValue, setInputValue] = useState("");
-
   const isDraggable = action === ACTIONS.SELECT;
 
   const { handleDragMove, handleDragEnd } = useDragging({
@@ -40,31 +37,13 @@ export function useDrawing(
     setScribbles,
     setTexts,
   });
-  const onDoubleClick = (e: any) => {
-    console.log("Double click detected");
-    console.log("ACTIONS", ACTIONS.SELECT);
-    if (action !== ACTIONS.SELECT) return;
-    
-    const clickedShape = e.target;
-    const { x, y, width, height } = clickedShape.getClientRect();
-    const stageBox = stageRef.current!.container().getBoundingClientRect();
-    console.log("Clicked shape id:", clickedShape.id());
-    setEditingText({
-      id: clickedShape.id(),
-      x: stageBox.left + x,
-      y: stageBox.top + y,
-      width,
-      height,
-      fillColor,
-      text: clickedShape.text(),
-    });
-    console.log('clickedShape.id()', clickedShape.id())
-    setInputValue(clickedShape.text());
-  };
-
+  useEffect(() => {
+    if (action !== ACTIONS.SELECT) {
+      transformerRef.current?.nodes([]); 
+      transformerRef.current?.getLayer()?.batchDraw();
+    }
+  }, [action]);
   const onPointerDown = () => {
-   // if (action !== ACTIONS.TEXT || !stageRef.current) return;
-    console.log("Pointer down triggered");
     if (action === ACTIONS.SELECT) return;
     if (stageRef.current) {
       const stage = stageRef.current;
@@ -72,7 +51,7 @@ export function useDrawing(
       const id = uuidv4();
       currentShapeId.current = id;
       isPainting.current = true;
-      console.log("Pointer down at:", x, y);
+    
       switch (action) {
         case ACTIONS.RECTANGLE:
           setRectangles((rectangles) => [
@@ -177,7 +156,6 @@ export function useDrawing(
     transformerRef.current?.nodes([target]);
     transformerRef.current?.getLayer()?.batchDraw();
   };
-
   return {
     stageRef,
     transformerRef,
@@ -194,10 +172,6 @@ export function useDrawing(
     onClick,
     texts,
     setTexts,
-    onDoubleClick,
-    editingText,
-    setEditingText,
-    inputValue,
-    setInputValue,
+   
   };
 }

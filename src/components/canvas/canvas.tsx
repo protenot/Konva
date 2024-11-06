@@ -10,8 +10,9 @@ import {
   Text,
 } from "react-konva";
 import { useDrawing } from "../../hooks/drawing";
-import { RefObject, useState } from "react";
+import { RefObject } from "react";
 import Konva from "konva";
+import { useEditingText } from "../../hooks/editing-text";
 
 interface CanvasProps {
   stageRef: RefObject<Konva.Stage | null>;
@@ -35,46 +36,16 @@ export default function Canvas({ stageRef, action, fillColor }: CanvasProps) {
     onClick,
     handleDragMove,
     handleDragEnd,
-    onDoubleClick,
-    editingText,
-    setEditingText,
     setTexts,
-    inputValue,
-    setInputValue,
   } = useDrawing(stageRef, action, fillColor);
 
-  const [inputStyle, setInputStyle] = useState({});
-  console.log("texts1", texts);
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setInputValue(newValue);
-    console.log("Editing Text ID:", editingText?.id);
-    console.log(
-      "Current Texts:",
-      texts.map((t) => ({ id: t.id, text: t.text }))
-    );
-    setTexts((texts) =>
-      texts.map((text) =>
-        text.id === editingText?.id ? { ...text, text: newValue } : text
-      )
-    );
-    console.log("texts2", texts[0]);
-
-    setEditingText((prev) => (prev ? { ...prev, text: newValue } : null));
-  };
-
-  const handleInputBlur = () => {
-    console.log("Blur event triggered");
-    console.log("Editing text:", editingText);
-    console.log("Input value:", inputValue);
-
-    setTexts((texts) =>
-      texts.map((text) =>
-        text.id === editingText?.id ? { ...text, text: inputValue } : text
-      )
-    );
-    setEditingText(null);
-  };
+  const {
+    editingText,
+    inputValue,
+    onDoubleClick,
+    handleInputChange,
+    handleInputBlur,
+  } = useEditingText(texts, setTexts, stageRef, action, fillColor);
 
   return (
     <>
