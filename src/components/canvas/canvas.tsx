@@ -76,6 +76,7 @@ export default function Canvas({ stageRef, action, fillColor }: CanvasProps) {
               y={rectangle.y}
               stroke={strokeColor}
               strokeWidth={2}
+              strokeScaleEnabled={false}
               fill={rectangle.fillColor}
               height={rectangle.height}
               width={rectangle.width}
@@ -147,7 +148,7 @@ export default function Canvas({ stageRef, action, fillColor }: CanvasProps) {
             />
           ))}
 
-          <Transformer ref={transformerRef} />
+          <Transformer ref={transformerRef} ignoreStroke={true}/>
         </Layer>
       </Stage>
       {editingText &&
